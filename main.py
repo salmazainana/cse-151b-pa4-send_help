@@ -22,8 +22,8 @@ def baseline_train(args, model, datasets, tokenizer):
     train_dataloader = get_dataloader(args, dataset=datasets['train'], split='train')
 
     # task2: setup model's optimizer_scheduler if you have
-    model.optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-    model.scheduler = torch.optim.lr_scheduler.ExponentialLR(model.optimizer, gamma=0.9)
+    model.optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    model.scheduler = torch.optim.lr_scheduler.ExponentialLR(model.optimizer, gamma=args.gamma)
     
     # task3: write a training loop
     for epoch_count in range(args.n_epochs):
