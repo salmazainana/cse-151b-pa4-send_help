@@ -30,7 +30,7 @@ def baseline_train(args, model, datasets, tokenizer):
         losses = 0
         model.train()
 
-        for step, batch in progress_bar(train_dataloader):
+        for step, batch in progress_bar(enumerate(train_dataloader), total=len(train_dataloader)):
             print(step, batch)
             inputs, labels = prepare_inputs(batch, model)
             logits = model.forward(inputs, labels)
