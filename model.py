@@ -44,7 +44,8 @@ class IntentModel(nn.Module):
     """
     x = self.encoder.forward(inputs)
     x = self.dropout(x)
-    x = self.classify(x)
+    x = self.classify.forward(x)
+    return x
   
 class Classifier(nn.Module):
   def __init__(self, args, target_size):

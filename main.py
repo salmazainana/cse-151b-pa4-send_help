@@ -14,12 +14,12 @@ from arguments import params
 from model import IntentModel, SupConModel, CustomModel
 from torch import nn
 
-device='cuda'
+device = 'cuda'
 
 def baseline_train(args, model, datasets, tokenizer):
     criterion = nn.CrossEntropyLoss()  # combines LogSoftmax() and NLLLoss()
     # task1: setup train dataloader
-    train_dataloader = get_dataloader(...)
+    train_dataloader = get_dataloader(args, dataset=datasets['train'], split='train')
 
     # task2: setup model's optimizer_scheduler if you have
     
@@ -28,10 +28,10 @@ def baseline_train(args, model, datasets, tokenizer):
         losses = 0
         model.train()
 
-        for step, batch in progress_bar(...):
-            inputs, labels = prepare_inputs(...)
-            logits = model(...)
-            loss = criterion(...)
+        for step, batch in progress_bar(train_dataloader):
+            inputs, labels = prepare_inputs(batch, model)
+            logits = model.forward(inputs, labels)
+            loss = criterion(logits, labels)
             loss.backward()
 
             model.optimizer.step()  # backprop to update the weights
