@@ -20,7 +20,7 @@ class IntentModel(nn.Module):
     # task1: add necessary class variables as you wish.
     
     # task2: initilize the dropout and classify layers
-    self.dropout = nn.Dropout(args.drop_rate)
+    self.dropout = nn.Dropout(args.droprate)
     self.classify = Classifier(args, self.target_size)
     
   def model_setup(self, args):
