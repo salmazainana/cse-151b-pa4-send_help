@@ -42,6 +42,9 @@ class IntentModel(nn.Module):
     task3:
         feed the output of the dropout layer to the Classifier which is provided for you.
     """
+    x = self.encoder.forward(inputs)
+    x = self.dropout(x)
+    x = self.classify(x)
   
 class Classifier(nn.Module):
   def __init__(self, args, target_size):
@@ -68,6 +71,7 @@ class SupConModel(IntentModel):
     super().__init__(args, tokenizer, target_size)
 
     # task1: initialize a linear head layer
+    self.fc = nn.Linear(feat_dim, target_size)
  
   def forward(self, inputs, targets):
 
