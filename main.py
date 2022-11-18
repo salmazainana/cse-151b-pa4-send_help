@@ -31,6 +31,7 @@ def baseline_train(args, model, datasets, tokenizer):
         model.train()
 
         for step, batch in progress_bar(train_dataloader):
+            print(step, batch)
             inputs, labels = prepare_inputs(batch, model)
             logits = model.forward(inputs, labels)
             loss = criterion(logits, labels)
@@ -57,7 +58,8 @@ def run_eval(args, model, datasets, tokenizer, split='validation'):
     dataloader = get_dataloader(args, datasets[split], split)
 
     acc = 0
-    for step, batch in progress_bar(dataloader, total=len(dataloader)):
+    for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
+        print("VALIDATION", step, batch)
         inputs, labels = prepare_inputs(batch, model)
         logits = model.forward(inputs, labels)
         
