@@ -33,7 +33,7 @@ def baseline_train(args, model, datasets, tokenizer):
         for step, batch in progress_bar(enumerate(train_dataloader), total=len(train_dataloader)):
             print(step, batch)
             inputs, labels = prepare_inputs(batch, model)
-            logits = model.forward(inputs, labels)
+            logits = model.forward(inputs['input_ids'], labels)
             loss = criterion(logits, labels)
             loss.backward()
 
@@ -61,7 +61,7 @@ def run_eval(args, model, datasets, tokenizer, split='validation'):
     for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
         print("VALIDATION", step, batch)
         inputs, labels = prepare_inputs(batch, model)
-        logits = model.forward(inputs, labels)
+        logits = model.forward(inputs['input_ids'], labels)
         
         tem = (logits.argmax(1) == labels).float().sum()
         acc += tem.item()
