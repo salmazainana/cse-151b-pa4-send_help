@@ -87,19 +87,22 @@ if __name__ == "__main__":
 
   cache_results, already_exist = check_cache(args)
   tokenizer = load_tokenizer(args)
-
+  print(1)
   if already_exist:
     features = cache_results
   else:
     data = load_data()
     features = prepare_features(args, data, tokenizer, cache_results)
   datasets = process_data(args, features, tokenizer)
+  print(2)
   for k,v in datasets.items():
     print(k, len(v))
- 
+  print(3)
   if args.task == 'baseline':
     model = IntentModel(args, tokenizer, target_size=60).to(device)
+    print(4)
     run_eval(args, model, datasets, tokenizer, split='validation')
+    print(5)
     run_eval(args, model, datasets, tokenizer, split='test')
     baseline_train(args, model, datasets, tokenizer)
     run_eval(args, model, datasets, tokenizer, split='test')
