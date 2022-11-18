@@ -18,16 +18,17 @@ class IntentModel(nn.Module):
     self.target_size = target_size
 
     # task1: add necessary class variables as you wish.
+
     
     # task2: initilize the dropout and classify layers
-    self.dropout = nn.Dropout(...)
-    self.classify = Classifier(...)
+    self.dropout = nn.Dropout(args.droprate)
+    self.classify = Classifier(args, self.target_size)
     
   def model_setup(self, args):
     print(f"Setting up {args.model} model")
 
     # task1: get a pretrained model of 'bert-base-uncased'
-    self.encoder = BertModel.from_pretrained(...)
+    self.encoder = BertModel.from_pretrained('bert-base-uncased')
     
     self.encoder.resize_token_embeddings(len(self.tokenizer))  # transformer_check
 
