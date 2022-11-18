@@ -52,10 +52,10 @@ def prepare_features(args, data, tokenizer, cache_path):
     all_features = {}
 
     for split, examples in data.items():
-        print(examples.shape)
         feats = []
         # task1: process examples using tokenizer. Wrap it using BaseInstance class and append it to feats list.
         for example in progress_bar(examples, total=len(examples)):
+            print(example)
             # tokenizer: set 'max_length' to padding, set True to truncation, set args.max_len to max_length 
             embed_data = tokenizer(text=example, padding='max_length', max_length=args.max_len, truncation=True)
             
