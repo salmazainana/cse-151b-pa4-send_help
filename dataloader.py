@@ -60,7 +60,7 @@ def prepare_features(args, data, tokenizer, cache_path):
             
             instance = BaseInstance(embed_data, example)
             feats.append(instance)
-        print(embed_data, example)
+        print("EMBED DATA AND EXAMPLE", embed_data, example)
         all_features[split] = feats
         print(f'Number of {split} features:', len(feats))
 
