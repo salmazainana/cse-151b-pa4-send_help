@@ -22,6 +22,8 @@ def baseline_train(args, model, datasets, tokenizer):
     train_dataloader = get_dataloader(...)
 
     # task2: setup model's optimizer_scheduler if you have
+    model.optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    model.scheduler = torch.optim.lr_scheduler.ExponentialLR(model.optimizer, gamma=0.9)
     
     # task3: write a training loop
     for epoch_count in range(args.n_epochs):
@@ -70,6 +72,7 @@ def supcon_train(args, model, datasets, tokenizer):
 
     # task1: load training split of the dataset
     
+
     # task2: setup optimizer_scheduler in your model
 
     # task3: write a training loop for SupConLoss function 
