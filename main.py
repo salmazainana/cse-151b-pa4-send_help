@@ -41,7 +41,7 @@ def baseline_train(args, model, datasets, tokenizer):
             model.scheduler.step()  # Update learning rate schedule
             model.zero_grad()
             losses += loss.item()
-    
+        print('\n\nTRAINED\n\n')
         run_eval(args, model, datasets, tokenizer, split='validation')
         print('epoch', epoch_count, '| losses:', losses)
   
