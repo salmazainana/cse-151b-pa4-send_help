@@ -22,7 +22,7 @@ def check_directories(args):
 
     cache_path = os.path.join(args.input_dir, 'cache')
     if not os.path.exists(cache_path):
-        os.mkdir(cache_path)
+        os.mkdirs(cache_path)
         print(f"Created {cache_path} directory")
 
     if args.debug:
