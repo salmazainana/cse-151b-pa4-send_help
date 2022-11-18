@@ -65,7 +65,6 @@ def prepare_features(args, data, tokenizer, cache_path):
         print(f'Number of {split} features:', len(feats))
 
     pkl.dump(all_features, open(cache_path, 'wb'))
-    print("ALL FEATURES", all_features)
     return all_features
 
 def process_data(args, features, tokenizer):
