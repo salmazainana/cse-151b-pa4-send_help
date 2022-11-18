@@ -27,7 +27,6 @@ def baseline_train(args, model, datasets, tokenizer):
     
     # task3: write a training loop
     for epoch_count in range(args.n_epochs):
-        print(f'EPOCH {epoch_count + 1}')
         losses = 0
         model.train()
 
