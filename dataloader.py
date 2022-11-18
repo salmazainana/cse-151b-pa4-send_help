@@ -52,7 +52,7 @@ def prepare_features(args, data, tokenizer, cache_path):
     all_features = {}
 
     for split, examples in data.items():
-        
+        print(split)
         feats = []
         # task1: process examples using tokenizer. Wrap it using BaseInstance class and append it to feats list.
         for example in progress_bar(examples, total=len(examples)):
