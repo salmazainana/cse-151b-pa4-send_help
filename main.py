@@ -59,7 +59,6 @@ def run_eval(args, model, datasets, tokenizer, split='validation'):
 
     acc = 0
     for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
-        print("VALIDATION", step, batch)
         inputs, labels = prepare_inputs(batch, model)
         print("INPUTS AND LABELS", inputs, '\n\n\n', labels)
         logits = model.forward(inputs['input_ids'], labels)
