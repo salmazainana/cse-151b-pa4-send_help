@@ -13,6 +13,7 @@ from load import load_data, load_tokenizer
 from arguments import params
 from model import IntentModel, SupConModel, CustomModel
 from torch import nn
+from transformers import AdamW, get_cosine_schedule_with_warmup, get_linear_schedule_with_warmup
 
 device = 'cuda'
 
@@ -23,20 +24,18 @@ def baseline_train(args, model, datasets, tokenizer):
 
     # task2: setup model's optimizer_scheduler if you have
     model.optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-    model.scheduler = torch.optim.lr_scheduler.ExponentialLR(model.optimizer, gamma=args.gamma)
+    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=0, num_training_steps=len(train_dataloader)*args.n_epochs)
     
     # task3: write a training loop
     for epoch_count in range(args.n_epochs):
         losses = 0
         model.train()
-
-        for step, batch in progress_bar(enumerate(train_dataloader), total=len(train_dataloader)):
-            print(step, batch)
+        print(epoch_count)
+        for step, batch in progress_bar(enumerate(train_dataloader)):
             inputs, labels = prepare_inputs(batch, model)
             logits = model.forward(inputs, labels)
             loss = criterion(logits, labels)
             loss.backward()
-
             model.optimizer.step()  # backprop to update the weights
             model.scheduler.step()  # Update learning rate schedule
             model.zero_grad()
@@ -48,10 +47,30 @@ def baseline_train(args, model, datasets, tokenizer):
 def custom_train(args, model, datasets, tokenizer):
     criterion = nn.CrossEntropyLoss()  # combines LogSoftmax() and NLLLoss()
     # task1: setup train dataloader
+    train_dataloader = get_dataloader(args, dataset=datasets['train'], split='train')
 
     # task2: setup model's optimizer_scheduler if you have
-      
+    model.optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    print(len(train_dataloader)*args.n_epochs)
+    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=0, num_training_steps=len(train_dataloader)*args.n_epochs)
+    
     # task3: write a training loop
+    for epoch_count in range(args.n_epochs):
+        losses = 0
+        model.train()
+        print(epoch_count)
+        for step, batch in progress_bar(enumerate(train_dataloader)):
+            inputs, labels = prepare_inputs(batch, model)
+            logits = model.forward(inputs, labels)
+            loss = criterion(logits, labels)
+            loss.backward()
+            model.optimizer.step()  # backprop to update the weights
+            model.scheduler.step()  # Update learning rate schedule
+            model.zero_grad()
+            losses += loss.item()
+    
+        run_eval(args, model, datasets, tokenizer, split='validation')
+        print('epoch', epoch_count, '| losses:', losses)
 
 def run_eval(args, model, datasets, tokenizer, split='validation'):
     model.eval()
@@ -59,10 +78,8 @@ def run_eval(args, model, datasets, tokenizer, split='validation'):
 
     acc = 0
     for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
-        print("VALIDATION", step, batch)
         inputs, labels = prepare_inputs(batch, model)
-        logits = model.forward(inputs, labels)
-        
+        logits = model(inputs, labels)
         tem = (logits.argmax(1) == labels).float().sum()
         acc += tem.item()
   
@@ -93,6 +110,8 @@ if __name__ == "__main__":
   else:
     data = load_data()
     features = prepare_features(args, data, tokenizer, cache_results)
+    
+    print(features)
   datasets = process_data(args, features, tokenizer)
   for k,v in datasets.items():
     print(k, len(v))
