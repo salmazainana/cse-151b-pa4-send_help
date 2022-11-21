@@ -16,7 +16,7 @@ from torch import nn
 
 device = 'cuda'
 
-def baseline_train(args, model, datasets, tokenizer):
+def baseline_train(args, model, datasets):
     criterion = nn.CrossEntropyLoss()  # combines LogSoftmax() and NLLLoss()
     # task1: setup train dataloader
     train_dataloader = get_dataloader(args, dataset=datasets['train'], split='train')
@@ -42,7 +42,7 @@ def baseline_train(args, model, datasets, tokenizer):
             model.zero_grad()
             losses += loss.item()
     
-        run_eval(args, model, datasets, tokenizer, split='validation')
+        run_eval(args, model, datasets, split='validation')
         print('epoch', epoch_count, '| losses:', losses)
   
 def custom_train(args, model, datasets, tokenizer):
@@ -53,7 +53,7 @@ def custom_train(args, model, datasets, tokenizer):
       
     # task3: write a training loop
 
-def run_eval(args, model, datasets, tokenizer, split='validation'):
+def run_eval(args, model, datasets, split='validation'):
     model.eval()
     dataloader = get_dataloader(args, datasets[split], split)
 
@@ -99,17 +99,17 @@ if __name__ == "__main__":
  
   if args.task == 'baseline':
     model = IntentModel(args, tokenizer, target_size=60).to(device)
-    run_eval(args, model, datasets, tokenizer, split='validation')
-    run_eval(args, model, datasets, tokenizer, split='test')
-    baseline_train(args, model, datasets, tokenizer)
-    run_eval(args, model, datasets, tokenizer, split='test')
+    run_eval(args, model, datasets, split='validation')
+    run_eval(args, model, datasets, split='test')
+    baseline_train(args, model, datasets)
+    run_eval(args, model, datasets, split='test')
   elif args.task == 'custom': # you can have multiple custom task for different techniques
     model = CustomModel(args, tokenizer, target_size=60).to(device)
-    run_eval(args, model, datasets, tokenizer, split='validation')
-    run_eval(args, model, datasets, tokenizer, split='test')
-    custom_train(args, model, datasets, tokenizer)
-    run_eval(args, model, datasets, tokenizer, split='test')
+    run_eval(args, model, datasets, split='validation')
+    run_eval(args, model, datasets, split='test')
+    custom_train(args, model, datasets)
+    run_eval(args, model, datasets, split='test')
   elif args.task == 'supcon':
     model = SupConModel(args, tokenizer, target_size=60).to(device)
-    supcon_train(args, model, datasets, tokenizer)
+    supcon_train(args, model, datasets)
    

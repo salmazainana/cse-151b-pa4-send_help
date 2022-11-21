@@ -31,7 +31,7 @@ class IntentModel(nn.Module):
     
     self.encoder.resize_token_embeddings(len(self.tokenizer))  # transformer_check
 
-  def forward(self, inputs, targets):
+  def forward(self, inputs):
     """
     task1: 
         feeding the input to the encoder, 
@@ -43,7 +43,7 @@ class IntentModel(nn.Module):
     """
     x = self.encoder.forward(inputs)
     x = self.dropout(x)
-    x = self.classify.forward(x, targets)
+    x = self.classify.forward(x)
     return x
   
 class Classifier(nn.Module):
@@ -73,7 +73,7 @@ class SupConModel(IntentModel):
     # task1: initialize a linear head layer
     self.fc = nn.Linear(feat_dim, target_size)
  
-  def forward(self, inputs, targets):
+  def forward(self, inputs):
 
     """
     task1: 
