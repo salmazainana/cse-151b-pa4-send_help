@@ -41,8 +41,8 @@ class IntentModel(nn.Module):
     task3:
         feed the output of the dropout layer to the Classifier which is provided for you.
     """
-    x = self.encoder.forward(inputs)
-    x = self.dropout(x)
+    x = self.encoder.forward(**inputs)
+    x = self.dropout(x[0][:, 0, :])
     x = self.classify.forward(x)
     return x
   
