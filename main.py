@@ -59,7 +59,7 @@ def run_eval(args, model, datasets, tokenizer, split='validation'):
     acc = 0
     for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
         inputs, labels = prepare_inputs(batch, model)
-        logits = model(inputs, labels)
+        logits = model.forward(inputs, labels)
         
         tem = (logits.argmax(1) == labels).float().sum()
         acc += tem.item()
