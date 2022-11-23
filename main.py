@@ -52,7 +52,7 @@ def custom_train(args, model, datasets, tokenizer):
     # task2: setup model's optimizer_scheduler if you have
     model.optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
     print(len(train_dataloader)*args.n_epochs)
-    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=0, num_training_steps=len(train_dataloader)*args.n_epochs)
+    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=65, num_training_steps=len(train_dataloader)*args.n_epochs)
     
     # task3: write a training loop
     for epoch_count in range(args.n_epochs):
