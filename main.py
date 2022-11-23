@@ -69,7 +69,7 @@ def custom_train(args, model, datasets, tokenizer):
             model.zero_grad()
             losses += loss.item()
     
-        run_eval(args, model, datasets, tokenizer, split='validation')
+        run_eval(args, model, datasets, split='validation')
         print('epoch', epoch_count, '| losses:', losses)
 
 def run_eval(args, model, datasets, split='validation'):
