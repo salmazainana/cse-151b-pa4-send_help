@@ -90,11 +90,28 @@ def supcon_train(args, model, datasets, tokenizer):
     criterion = SupConLoss(temperature=args.temperature)
 
     # task1: load training split of the dataset
-    
+    train_dataloader = get_dataloader(args, dataset=datasets['train'], split='train')
 
     # task2: setup optimizer_scheduler in your model
+    model.optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
     # task3: write a training loop for SupConLoss function 
+    for epoch_count in range(args.n_epochs):
+      losses = 0
+      model.train()
+      print(epoch_count)
+      for step, batch in progress_bar(enumerate(train_dataloader)):
+          inputs, labels = prepare_inputs(batch, model)
+          logits = model.forward(inputs, labels)
+          loss = criterion(logits, labels)
+          loss.backward()
+          model.optimizer.step()  # backprop to update the weights
+          model.scheduler.step()  # Update learning rate schedule
+          model.zero_grad()
+          losses += loss.item()
+  
+    run_eval(args, model, datasets, tokenizer, split='validation')
+    print('epoch', epoch_count, '| losses:', losses)
 
 if __name__ == "__main__":
   args = params()
@@ -130,5 +147,8 @@ if __name__ == "__main__":
     run_eval(args, model, datasets, split='test')
   elif args.task == 'supcon':
     model = SupConModel(args, tokenizer, target_size=60).to(device)
+    run_eval(args, model, datasets, split='validation')
+    run_eval(args, model, datasets, split='test')
     supcon_train(args, model, datasets)
+    run_eval(args, model, datasets, split='test')
    

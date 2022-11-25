@@ -71,6 +71,9 @@ class SupConModel(IntentModel):
     super().__init__(args, tokenizer, target_size)
 
     # task1: initialize a linear head layer
+    self.encoder = BertModel.from_pretrained('bert-base-uncased')
+    self.encoder.resize_token_embeddings(len(self.tokenizer))
+    self.norm = nn.BatchNorm1d(feat_dim)
     self.fc = nn.Linear(feat_dim, target_size)
  
   def forward(self, inputs):
@@ -84,3 +87,8 @@ class SupConModel(IntentModel):
     task3:
         feed the normalized output of the dropout layer to the linear head layer; return the embedding
     """
+    x = self.encoder.forward(**inputs)
+    x = self.dropout(x[0][:, 0, :])
+    x = self.norm(x)
+    x = self.fc(x)
+    return x
