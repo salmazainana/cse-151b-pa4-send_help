@@ -14,17 +14,18 @@ from arguments import params
 from model import IntentModel, SupConModel, CustomModel
 from torch import nn
 from transformers import AdamW, get_cosine_schedule_with_warmup, get_linear_schedule_with_warmup
+from torch.optim.swa_utils import AveragedModel, SWALR
 
 device = 'cuda'
 
-def baseline_train(args, model, datasets):
+def baseline_train(args, model, datasets, tokenizer):
     criterion = nn.CrossEntropyLoss()  # combines LogSoftmax() and NLLLoss()
     # task1: setup train dataloader
     train_dataloader = get_dataloader(args, dataset=datasets['train'], split='train')
 
     # task2: setup model's optimizer_scheduler if you have
     model.optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=0, num_training_steps=len(train_dataloader)*args.n_epochs)
+    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=115, num_training_steps=len(train_dataloader)*args.n_epochs)
     
     # task3: write a training loop
     for epoch_count in range(args.n_epochs):
@@ -41,7 +42,7 @@ def baseline_train(args, model, datasets):
             model.zero_grad()
             losses += loss.item()
     
-        run_eval(args, model, datasets, split='validation')
+        run_eval(args, model, datasets, tokenizer, split='validation')
         print('epoch', epoch_count, '| losses:', losses)
   
 def custom_train(args, model, datasets, tokenizer):
@@ -51,8 +52,12 @@ def custom_train(args, model, datasets, tokenizer):
 
     # task2: setup model's optimizer_scheduler if you have
     model.optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-    print(len(train_dataloader)*args.n_epochs)
-    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=65, num_training_steps=len(train_dataloader)*args.n_epochs)
+    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=120, num_training_steps=len(train_dataloader)*args.n_epochs)
+    
+    weighted_model = torch.optim.swa_utils.AveragedModel(model)
+    start = 10
+    avg_sched = SWALR(model.optimizer, swa_lr=0.000001, anneal_strategy="linear", anneal_epochs=3)
+  
     
     # task3: write a training loop
     for epoch_count in range(args.n_epochs):
@@ -65,21 +70,26 @@ def custom_train(args, model, datasets, tokenizer):
             loss = criterion(logits, labels)
             loss.backward()
             model.optimizer.step()  # backprop to update the weights
-            model.scheduler.step()  # Update learning rate schedule
+            if epoch_count>=start:
+                weighted_model.update_parameters(model)
+                avg_sched.step()
+            else:
+                model.scheduler.step()  # Update learning rate schedule
             model.zero_grad()
             losses += loss.item()
     
-        run_eval(args, model, datasets, split='validation')
+        torch.optim.swa_utils.update_bn(train_dataloader, weighted_model)
+        run_eval(args, weighted_model, datasets, tokenizer, split='validation')
         print('epoch', epoch_count, '| losses:', losses)
 
-def run_eval(args, model, datasets, split='validation'):
+def run_eval(args, model, datasets, tokenizer, split='validation'):
     model.eval()
     dataloader = get_dataloader(args, datasets[split], split)
 
     acc = 0
     for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
         inputs, labels = prepare_inputs(batch, model)
-        logits = model(inputs, labels)
+        logits = model.forward(inputs, labels)
         tem = (logits.argmax(1) == labels).float().sum()
         acc += tem.item()
   
@@ -94,24 +104,34 @@ def supcon_train(args, model, datasets, tokenizer):
 
     # task2: setup optimizer_scheduler in your model
     model.optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
-
+    
+    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=100, num_training_steps=len(train_dataloader)*args.n_epochs)
+    
     # task3: write a training loop for SupConLoss function 
     for epoch_count in range(args.n_epochs):
-      losses = 0
-      model.train()
-      print(epoch_count)
-      for step, batch in progress_bar(enumerate(train_dataloader)):
-          inputs, labels = prepare_inputs(batch, model)
-          logits = model.forward(inputs, labels)
-          loss = criterion(logits, labels)
-          loss.backward()
-          model.optimizer.step()  # backprop to update the weights
-          model.scheduler.step()  # Update learning rate schedule
-          model.zero_grad()
-          losses += loss.item()
+        print(epoch_count)
+        losses = 0
+        model.train()
+ 
+        for step, batch in progress_bar(enumerate(train_dataloader)):
+        
+            inputs, labels = prepare_inputs(batch, model)
+            logits_pos = model.forward(inputs, labels)
+            logits_neg = model.forward(inputs, labels)
+            
+            features = torch.cat([logits_pos.unsqueeze(1), logits_pos.unsqueeze(1)], dim=1)
+        
+            loss = criterion.forward(features, labels)
+            
+            loss.backward()
+            model.optimizer.step()  # backprop to update the weights
+            model.scheduler.step()  # Update learning rate schedule
+            model.zero_grad()
+            losses += loss.item()
   
-    run_eval(args, model, datasets, tokenizer, split='validation')
-    print('epoch', epoch_count, '| losses:', losses)
+        #run_eval(args, model, datasets, tokenizer, split='validation')
+        print('epoch', epoch_count, '| losses:', losses)
+
 
 if __name__ == "__main__":
   args = params()
@@ -135,20 +155,16 @@ if __name__ == "__main__":
  
   if args.task == 'baseline':
     model = IntentModel(args, tokenizer, target_size=60).to(device)
-    run_eval(args, model, datasets, split='validation')
-    run_eval(args, model, datasets, split='test')
-    baseline_train(args, model, datasets)
-    run_eval(args, model, datasets, split='test')
+    run_eval(args, model, datasets, tokenizer, split='validation')
+    run_eval(args, model, datasets, tokenizer, split='test')
+    baseline_train(args, model, datasets, tokenizer)
+    run_eval(args, model, datasets, tokenizer, split='test')
   elif args.task == 'custom': # you can have multiple custom task for different techniques
     model = CustomModel(args, tokenizer, target_size=60).to(device)
-    run_eval(args, model, datasets, split='validation')
-    run_eval(args, model, datasets, split='test')
-    custom_train(args, model, datasets)
-    run_eval(args, model, datasets, split='test')
+    run_eval(args, model, datasets, tokenizer, split='validation')
+    run_eval(args, model, datasets, tokenizer, split='test')
+    custom_train(args, model, datasets, tokenizer)
+    run_eval(args, model, datasets, tokenizer, split='test')
   elif args.task == 'supcon':
     model = SupConModel(args, tokenizer, target_size=60).to(device)
-    run_eval(args, model, datasets, split='validation')
-    run_eval(args, model, datasets, split='test')
-    supcon_train(args, model, datasets)
-    run_eval(args, model, datasets, split='test')
-   
+    supcon_train(args, model, datasets, tokenizer)

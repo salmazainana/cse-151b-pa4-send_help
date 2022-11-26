@@ -5,12 +5,12 @@ def params():
     parser = argparse.ArgumentParser()
 
     # Experiment options
-    parser.add_argument("--task", default="custom", type=str,\
+    parser.add_argument("--task", default="supcon", type=str,\
                 help="baseline is fine-tuning bert for classification;\n\
                       tune is advanced techiques to fine-tune bert;\n\
                       constast is contrastive learning method")
                       #choices=['baseline','tune','supcon'])
-    parser.add_argument("--temperature", default=0.7, type=int, 
+    parser.add_argument("--temperature", default=0.5, type=int, 
                 help="temperature parameter for contrastive loss")
 
     # optional fine-tuning techiques parameters
@@ -40,7 +40,7 @@ def params():
                 help="Whether to run eval on the dev set.")
     
     # Hyper-parameters for tuning
-    parser.add_argument("--batch-size", default=50, type=int,
+    parser.add_argument("--batch-size", default=30, type=int,
                 help="Batch size per GPU/CPU for training and evaluation.")
     parser.add_argument("--learning-rate", default=0.00005, type=float,
                 help="Model learning rate starting point.")

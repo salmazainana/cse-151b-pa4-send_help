@@ -20,7 +20,7 @@ class IntentModel(nn.Module):
     # task1: add necessary class variables as you wish.
     
     # task2: initilize the dropout and classify layers
-    self.dropout = nn.Dropout(args.drop_rate)
+    self.dropout = nn.Dropout(p = args.drop_rate)
     self.classify = Classifier(args, self.target_size)
     
   def model_setup(self, args):
@@ -31,7 +31,7 @@ class IntentModel(nn.Module):
     
     self.encoder.resize_token_embeddings(len(self.tokenizer))  # transformer_check
 
-  def forward(self, inputs):
+  def forward(self, inputs, targets):
     """
     task1: 
         feeding the input to the encoder, 
@@ -42,7 +42,7 @@ class IntentModel(nn.Module):
         feed the output of the dropout layer to the Classifier which is provided for you.
     """
     x = self.encoder.forward(**inputs)
-    x = self.dropout(x[0][:, 0, :])
+    x = self.dropout(x[0][:,0,:])
     x = self.classify.forward(x)
     return x
   
@@ -64,39 +64,23 @@ class CustomModel(IntentModel):
   def __init__(self, args, tokenizer, target_size):
     super().__init__(args, tokenizer, target_size)
     
-    # task1: use initialization for setting different strategies/techniques to better fine-tune the BERT model
+    #for name,param in list(self.encoder.named_parameters()):
+        #print(name)
+        #if i<args.reinit_n_layers:
+            #param.requires_grad = True
+        #else:
+            #param.requires_grad = False
     
-  def _do_reinit(self):
-    # Re-init the pooler.
-    self.encoder.pooler.dense.weight.data.normal_(mean=0.0, std=0.02)
-    self.encoder.pooler.dense.bias.data.zero_()
-    for param in self.encoder.pooler.parameters():
-        param.requires_grad = True 
-    # Re-init the last n layers.
-    for n in range(self.reinit_n_layers):
-        self.encoder.encoder.layer[-(n+1)].apply(self._init_weight)
-
-  def _init_weight(self,module):                       
-    if isinstance(module, nn.Linear):
-        module.weight.data.normal_(mean=0.0, std= 0.02)
-        module.bias.data.zero_()
-
-    elif isinstance(module, nn.LayerNorm):
-        module.bias.data.zero_()
-        module.weight.data.fill_(1.0)        
-
-
+    
 class SupConModel(IntentModel):
   def __init__(self, args, tokenizer, target_size, feat_dim=768):
     super().__init__(args, tokenizer, target_size)
 
     # task1: initialize a linear head layer
-    self.encoder = BertModel.from_pretrained('bert-base-uncased')
-    self.encoder.resize_token_embeddings(len(self.tokenizer))
     self.norm = nn.BatchNorm1d(feat_dim)
     self.fc = nn.Linear(feat_dim, target_size)
  
-  def forward(self, inputs):
+  def forward(self, inputs, targets):
 
     """
     task1: 
@@ -108,7 +92,10 @@ class SupConModel(IntentModel):
         feed the normalized output of the dropout layer to the linear head layer; return the embedding
     """
     x = self.encoder.forward(**inputs)
-    x = self.dropout(x[0][:, 0, :])
-    x = self.norm(x)
-    x = self.fc(x)
+    
+    x = self.dropout(x[0][:, 0, :]) 
+    x= self.fc(x)
+    # have also replaced last seld.norm and self.fc with code below and still dont work
+    x = F.normalize(x, dim=1)
+    
     return x
