@@ -85,7 +85,7 @@ def custom_train(args, model, datasets, tokenizer):
 def run_eval(args, model, datasets, tokenizer, split='validation'):
     model.eval()
     dataloader = get_dataloader(args, datasets[split], split)
-
+    dataloader.collate_fn
     acc = 0
     for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
         inputs, labels = prepare_inputs(batch, model)
@@ -119,7 +119,7 @@ def supcon_train(args, model, datasets, tokenizer):
             logits_pos = model.forward(inputs, labels)
             logits_neg = model.forward(inputs, labels)
             
-            features = torch.cat([logits_pos.unsqueeze(1), logits_pos.unsqueeze(1)], dim=1)
+            features = torch.cat([logits_pos.unsqueeze(1), logits_neg.unsqueeze(1)], dim=1)
         
             loss = criterion.forward(features, labels)
             
