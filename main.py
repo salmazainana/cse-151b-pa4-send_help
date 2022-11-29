@@ -4,7 +4,7 @@ import random
 import torch
 
 import math
-
+import umap.plot
 from tqdm import tqdm as progress_bar
 
 from utils import set_seed, setup_gpus, check_directories
@@ -15,6 +15,7 @@ from model import IntentModel, SupConModel, CustomModel
 from torch import nn
 from transformers import AdamW, get_cosine_schedule_with_warmup, get_linear_schedule_with_warmup
 from torch.optim.swa_utils import AveragedModel, SWALR
+import umap
 
 device = 'cuda'
 
@@ -85,7 +86,7 @@ def custom_train(args, model, datasets, tokenizer):
 def run_eval(args, model, datasets, tokenizer, split='validation'):
     model.eval()
     dataloader = get_dataloader(args, datasets[split], split)
-    dataloader.collate_fn
+
     acc = 0
     for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
         inputs, labels = prepare_inputs(batch, model)
@@ -93,6 +94,7 @@ def run_eval(args, model, datasets, tokenizer, split='validation'):
         tem = (logits.argmax(1) == labels).float().sum()
         acc += tem.item()
   
+    
     print(f'{split} acc:', acc/len(datasets[split]), f'|dataset split {split} size:', len(datasets[split]))
 
 def supcon_train(args, model, datasets, tokenizer):
@@ -130,8 +132,37 @@ def supcon_train(args, model, datasets, tokenizer):
             losses += loss.item()
   
         #run_eval(args, model, datasets, tokenizer, split='validation')
-        print('epoch', epoch_count, '| losses:', losses)
+        print('epoch', epoch_count, '| losses:', losses/len(datasets['train']))
 
+
+def test(args, model, datasets, tokenizer, split='test'):
+    model.eval()
+    base = []
+    lab = []
+    dataloader = get_dataloader(args, datasets[split], split)
+    for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
+        inputs, labels = prepare_inputs(batch, model)
+        logits = model.forward(inputs, labels)
+        for i in range(len(labels)):
+            if labels[i]<=10:
+                base.append(logits[i].tolist())
+                lab.append(labels[i].item())
+                
+    embed = np.array(base)
+    labe = np.array(lab)
+    reducer = umap.UMAP()
+    embedding = reducer.fit(embed)
+    print(embedding)
+    image = umap.plot.points(embedding, labels=labe)
+    figure = image.get_figure()
+    figure.savefig('img2')
+    #plt.close(figure)
+
+                
+                
+                
+  
+    #print(f'{split} acc:', acc/len(datasets[split]), f'|dataset split {split} size:', len(datasets[split]))
 
 if __name__ == "__main__":
   args = params()
@@ -168,3 +199,5 @@ if __name__ == "__main__":
   elif args.task == 'supcon':
     model = SupConModel(args, tokenizer, target_size=60).to(device)
     supcon_train(args, model, datasets, tokenizer)
+    test(args, model, datasets, tokenizer, split='test')
+   

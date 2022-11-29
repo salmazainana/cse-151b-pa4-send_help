@@ -10,7 +10,7 @@ def params():
                       tune is advanced techiques to fine-tune bert;\n\
                       constast is contrastive learning method")
                       #choices=['baseline','tune','supcon'])
-    parser.add_argument("--temperature", default=0.5, type=int, 
+    parser.add_argument("--temperature", default=0.7, type=int, 
                 help="temperature parameter for contrastive loss")
 
     # optional fine-tuning techiques parameters
@@ -40,19 +40,19 @@ def params():
                 help="Whether to run eval on the dev set.")
     
     # Hyper-parameters for tuning
-    parser.add_argument("--batch-size", default=30, type=int,
+    parser.add_argument("--batch-size", default=16, type=int,
                 help="Batch size per GPU/CPU for training and evaluation.")
     parser.add_argument("--learning-rate", default=0.00005, type=float,
                 help="Model learning rate starting point.")
-    parser.add_argument("--hidden-dim", default=600, type=int,
+    parser.add_argument("--hidden-dim", default=300, type=int,
                 help="Model hidden dimension.")
-    parser.add_argument("--drop-rate", default=0.12, type=float,
+    parser.add_argument("--drop-rate", default=0.05, type=float,
                 help="Dropout rate for model training")
     parser.add_argument("--embed-dim", default=768, type=int,
                 help="The embedding dimension of pretrained LM.")
     parser.add_argument("--adam-epsilon", default=1e-5, type=float,
                 help="Epsilon for Adam optimizer.")
-    parser.add_argument("--n-epochs", default=10, type=int,
+    parser.add_argument("--n-epochs", default=1, type=int,
                 help="Total number of training epochs to perform.")
     parser.add_argument("--max-len", default=25, type=int,
                 help="maximum sequence length to look back")
@@ -60,4 +60,3 @@ def params():
 
     args = parser.parse_args()
     return args
-
