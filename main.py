@@ -98,7 +98,7 @@ def run_eval(args, model, datasets, tokenizer, split='validation'):
 
 def supcon_train(args, model, datasets, tokenizer):
     from loss import SupConLoss
-    criterion = nn.CrossEntropyLoss()
+    criterion = SupConLoss(temperature=args.temperature)
 
     # task1: load training split of the dataset
     train_dataloader = get_dataloader(args, dataset=datasets['train'], split='train')
@@ -197,6 +197,6 @@ if __name__ == "__main__":
     run_eval(args, model, datasets, tokenizer, split='test')
   elif args.task == 'supcon':
     model = SupConModel(args, tokenizer, target_size=60).to(device)
-    baseline_train(args, model, datasets, tokenizer)
+    supcon_train(args, model, datasets, tokenizer)
     test(args, model, datasets, tokenizer, split='test')
    
