@@ -2,7 +2,7 @@ import os, sys, pdb
 import numpy as np
 import random
 import torch
-
+import umap.plot
 import math
 from tqdm import tqdm as progress_bar
 
