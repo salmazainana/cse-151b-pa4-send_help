@@ -4,7 +4,6 @@ import random
 import torch
 
 import math
-import umap.plot
 from tqdm import tqdm as progress_bar
 
 from utils import set_seed, setup_gpus, check_directories
