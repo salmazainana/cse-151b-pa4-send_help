@@ -98,7 +98,7 @@ def run_eval(args, model, datasets, tokenizer, split='validation'):
 
 def supcon_train(args, model, datasets, tokenizer):
     from loss import SupConLoss
-    criterion = SupConLoss(temperature=args.temperature)
+    criterion = nn.CrossEntropyLoss()
 
     # task1: load training split of the dataset
     train_dataloader = get_dataloader(args, dataset=datasets['train'], split='train')
@@ -122,7 +122,7 @@ def supcon_train(args, model, datasets, tokenizer):
             
             features = torch.cat([logits_pos.unsqueeze(1), logits_neg.unsqueeze(1)], dim=1)
         
-            loss = criterion.forward(features)
+            loss = criterion(features, labels)
             
             loss.backward()
             model.optimizer.step()  # backprop to update the weights
@@ -154,7 +154,7 @@ def test(args, model, datasets, tokenizer, split='test'):
     print(embedding)
     image = umap.plot.points(embedding, labels=labe)
     figure = image.get_figure()
-    figure.savefig('SimCLR')
+    figure.savefig('CrossEntropy')
     #plt.close(figure)
 
                 
