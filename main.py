@@ -122,7 +122,7 @@ def supcon_train(args, model, datasets, tokenizer):
             
             features = torch.cat([logits_pos.unsqueeze(1), logits_neg.unsqueeze(1)], dim=1)
         
-            loss = criterion(features, labels)
+            loss = criterion.forward(features)
             
             loss.backward()
             model.optimizer.step()  # backprop to update the weights
@@ -154,7 +154,7 @@ def test(args, model, datasets, tokenizer, split='test'):
     print(embedding)
     image = umap.plot.points(embedding, labels=labe)
     figure = image.get_figure()
-    figure.savefig('CrossEntropy')
+    figure.savefig('SimCLR')
     #plt.close(figure)
 
                 
@@ -197,6 +197,6 @@ if __name__ == "__main__":
     run_eval(args, model, datasets, tokenizer, split='test')
   elif args.task == 'supcon':
     model = SupConModel(args, tokenizer, target_size=60).to(device)
-    supcon_train(args, model, datasets, tokenizer)
+    baseline_train(args, model, datasets, tokenizer)
     test(args, model, datasets, tokenizer, split='test')
    
