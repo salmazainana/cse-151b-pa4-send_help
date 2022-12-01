@@ -44,7 +44,7 @@ def params():
                 help="Batch size per GPU/CPU for training and evaluation.")
     parser.add_argument("--learning-rate", default=0.00005, type=float,
                 help="Model learning rate starting point.")
-    parser.add_argument("--hidden-dim", default=300, type=int,
+    parser.add_argument("--hidden-dim", default=150, type=int,
                 help="Model hidden dimension.")
     parser.add_argument("--drop-rate", default=0.05, type=float,
                 help="Dropout rate for model training")
