@@ -154,7 +154,7 @@ def test(args, model, datasets, tokenizer, split='test'):
     print(embedding)
     image = umap.plot.points(embedding, labels=labe)
     figure = image.get_figure()
-    figure.savefig('more_epochs')
+    figure.savefig('im1')
     #plt.close(figure)
 
                 
@@ -199,4 +199,5 @@ if __name__ == "__main__":
     model = SupConModel(args, tokenizer, target_size=60).to(device)
     supcon_train(args, model, datasets, tokenizer)
     run_eval(args, model, datasets, tokenizer, split='test')
+    test(args, model, datasets, tokenizer, split='test')
    
