@@ -61,30 +61,32 @@ class Classifier(nn.Module):
 
 
 class CustomModel(IntentModel):
-  def __init__(self, args, tokenizer, target_size):
-    super().__init__(args, tokenizer, target_size)
-    
+ class CustomModel(IntentModel):
     # task1: use initialization for setting different strategies/techniques to better fine-tune the BERT model
+    def __init__(self, args, tokenizer, target_size):
+        super().__init__(args, tokenizer, target_size)
+        self._do_reinit(args.reinit_n_layers)
     
-  def _do_reinit(self):
-    # Re-init the pooler.
-    self.encoder.pooler.dense.weight.data.normal_(mean=0.0, std=0.02)
-    self.encoder.pooler.dense.bias.data.zero_()
-    for param in self.encoder.pooler.parameters():
-        param.requires_grad = True 
-    # Re-init the last n layers.
-    for n in range(self.reinit_n_layers):
-        self.encoder.encoder.layer[-(n+1)].apply(self._init_weight)
+    
+    def _do_reinit(self, layers):
+        # Re-init pooler.
+        self.encoder.pooler.dense.weight.data.normal_(mean=0.0, std=0.02)
+        self.encoder.pooler.dense.bias.data.zero_()
+        for param in self.encoder.pooler.parameters():
+            param.requires_grad = True 
+        # Re-init last n layers.
+        for n in range(layers):
+            self.encoder.encoder.layer[-(n+1)].apply(self._init_weight)
 
-  def _init_weight(self,module):                       
-    if isinstance(module, nn.Linear):
-        module.weight.data.normal_(mean=0.0, std= 0.02)
-        module.bias.data.zero_()
-
-    elif isinstance(module, nn.LayerNorm):
-        module.bias.data.zero_()
-        module.weight.data.fill_(1.0)        
-
+    def _init_weight(self,module):                       
+        
+        if isinstance(module, nn.Linear):
+            module.weight.data.normal_(mean=0.0, std= 0.02)
+            module.bias.data.zero_()
+            
+        elif isinstance(module, nn.LayerNorm):
+            module.bias.data.zero_()
+            module.weight.data.fill_(1.0)  
 
 class SupConModel(IntentModel):
   def __init__(self, args, tokenizer, target_size, feat_dim=768):
