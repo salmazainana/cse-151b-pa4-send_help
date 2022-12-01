@@ -61,7 +61,6 @@ class Classifier(nn.Module):
 
 
 class CustomModel(IntentModel):
- class CustomModel(IntentModel):
     # task1: use initialization for setting different strategies/techniques to better fine-tune the BERT model
     def __init__(self, args, tokenizer, target_size):
         super().__init__(args, tokenizer, target_size)
@@ -88,6 +87,7 @@ class CustomModel(IntentModel):
             module.bias.data.zero_()
             module.weight.data.fill_(1.0)  
 
+            
 class SupConModel(IntentModel):
   def __init__(self, args, tokenizer, target_size, feat_dim=768):
     super().__init__(args, tokenizer, target_size)
