@@ -52,7 +52,7 @@ def params():
                 help="The embedding dimension of pretrained LM.")
     parser.add_argument("--adam-epsilon", default=1e-5, type=float,
                 help="Epsilon for Adam optimizer.")
-    parser.add_argument("--n-epochs", default=10, type=int,
+    parser.add_argument("--n-epochs", default=1, type=int,
                 help="Total number of training epochs to perform.")
     parser.add_argument("--max-len", default=25, type=int,
                 help="maximum sequence length to look back")
