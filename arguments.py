@@ -44,7 +44,7 @@ def params():
                 help="Batch size per GPU/CPU for training and evaluation.")
     parser.add_argument("--learning-rate", default=0.00005, type=float,
                 help="Model learning rate starting point.")
-    parser.add_argument("--hidden-dim", default=150, type=int,
+    parser.add_argument("--hidden-dim", default=300, type=int,
                 help="Model hidden dimension.")
     parser.add_argument("--drop-rate", default=0.05, type=float,
                 help="Dropout rate for model training")
@@ -52,7 +52,7 @@ def params():
                 help="The embedding dimension of pretrained LM.")
     parser.add_argument("--adam-epsilon", default=1e-5, type=float,
                 help="Epsilon for Adam optimizer.")
-    parser.add_argument("--n-epochs", default=1, type=int,
+    parser.add_argument("--n-epochs", default=10, type=int,
                 help="Total number of training epochs to perform.")
     parser.add_argument("--max-len", default=25, type=int,
                 help="maximum sequence length to look back")
