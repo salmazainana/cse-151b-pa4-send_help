@@ -93,9 +93,10 @@ class SupConModel(IntentModel):
     super().__init__(args, tokenizer, target_size)
 
     # task1: initialize a linear head layer
+    self.norm = nn.BatchNorm1d(feat_dim)
     self.fc = nn.Linear(feat_dim, target_size)
  
-  def forward(self, inputs):
+  def forward(self, inputs, targets):
 
     """
     task1: 
@@ -106,3 +107,11 @@ class SupConModel(IntentModel):
     task3:
         feed the normalized output of the dropout layer to the linear head layer; return the embedding
     """
+    x = self.encoder.forward(**inputs)
+    
+    x = self.dropout(x[0][:, 0, :]) 
+    x= self.fc(x)
+    # have also replaced last seld.norm and self.fc with code below and still dont work
+    x = F.normalize(x, dim=1)
+    
+    return x
