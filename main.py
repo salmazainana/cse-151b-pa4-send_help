@@ -154,7 +154,7 @@ def test(args, model, datasets, tokenizer, split='test'):
     print(embedding)
     image = umap.plot.points(embedding, labels=labe)
     figure = image.get_figure()
-    figure.savefig('SimCLR')
+    figure.savefig('more_epochs')
     #plt.close(figure)
 
                 

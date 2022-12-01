@@ -48,11 +48,11 @@ def params():
                 help="Model hidden dimension.")
     parser.add_argument("--drop-rate", default=0.05, type=float,
                 help="Dropout rate for model training")
-    parser.add_argument("--embed-dim", default=10, type=int,
+    parser.add_argument("--embed-dim", default=768, type=int,
                 help="The embedding dimension of pretrained LM.")
     parser.add_argument("--adam-epsilon", default=1e-8, type=float,
                 help="Epsilon for Adam optimizer.")
-    parser.add_argument("--n-epochs", default=1, type=int,
+    parser.add_argument("--n-epochs", default=5, type=int,
                 help="Total number of training epochs to perform.")
     parser.add_argument("--max-len", default=20, type=int,
                 help="maximum sequence length to look back")
