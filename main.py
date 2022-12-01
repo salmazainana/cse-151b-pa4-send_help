@@ -122,7 +122,7 @@ def supcon_train(args, model, datasets, tokenizer):
             
             features = torch.cat([logits_pos.unsqueeze(1), logits_neg.unsqueeze(1)], dim=1)
         
-            loss = criterion.forward(features)
+            loss = criterion.forward(features, labels)
             
             loss.backward()
             model.optimizer.step()  # backprop to update the weights
