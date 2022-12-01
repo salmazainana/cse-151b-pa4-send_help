@@ -90,11 +90,61 @@ def supcon_train(args, model, datasets, tokenizer):
     criterion = SupConLoss(temperature=args.temperature)
 
     # task1: load training split of the dataset
-    
+    train_dataloader = get_dataloader(args, dataset=datasets['train'], split='train')
 
     # task2: setup optimizer_scheduler in your model
-
+    model.optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
+    
+    model.scheduler = get_linear_schedule_with_warmup(model.optimizer, num_warmup_steps=100, num_training_steps=len(train_dataloader)*args.n_epochs)
+    
     # task3: write a training loop for SupConLoss function 
+    for epoch_count in range(args.n_epochs):
+        print(epoch_count)
+        losses = 0
+        model.train()
+ 
+        for step, batch in progress_bar(enumerate(train_dataloader)):
+        
+            inputs, labels = prepare_inputs(batch, model)
+            logits_pos = model.forward(inputs, labels)
+            logits_neg = model.forward(inputs, labels)
+            
+            features = torch.cat([logits_pos.unsqueeze(1), logits_neg.unsqueeze(1)], dim=1)
+        
+            loss = criterion.forward(features, labels)
+            
+            loss.backward()
+            model.optimizer.step()  # backprop to update the weights
+            model.scheduler.step()  # Update learning rate schedule
+            model.zero_grad()
+            losses += loss.item()
+  
+        #run_eval(args, model, datasets, tokenizer, split='validation')
+        print('epoch', epoch_count, '| losses:', losses/len(datasets['train']))
+
+
+def test(args, model, datasets, tokenizer, split='test'):
+    model.eval()
+    base = []
+    lab = []
+    dataloader = get_dataloader(args, datasets[split], split)
+    for step, batch in progress_bar(enumerate(dataloader), total=len(dataloader)):
+        inputs, labels = prepare_inputs(batch, model)
+        logits = model.forward(inputs, labels)
+        for i in range(len(labels)):
+            if labels[i]<=10:
+                base.append(logits[i].tolist())
+                lab.append(labels[i].item())
+                
+    embed = np.array(base)
+    labe = np.array(lab)
+    reducer = umap.UMAP()
+    embedding = reducer.fit(embed)
+    print(embedding)
+    image = umap.plot.points(embedding, labels=labe)
+    figure = image.get_figure()
+    figure.savefig('im1')
+    #plt.close(figure)
 
 if __name__ == "__main__":
   args = params()
